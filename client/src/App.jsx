@@ -34,15 +34,16 @@ function App() {
     setStatus("Uploading...");
 
     try {
-      // 2. Upload to Real Cloud Storage
-      const fileRef = ref(storage, `uploads/${id}.jpg`);
-      await uploadBytes(fileRef, image);
-
-      // 3. Write to Real Cloud Database
+      // 2. Write to Real Cloud Database (Create doc FIRST to avoid race condition)
       await setDoc(doc(db, "items", id), {
         status: "pending",
         createdAt: new Date()
       });
+
+      // 3. Upload to Real Cloud Storage
+      const fileRef = ref(storage, `uploads/${id}.jpg`);
+      const metadata = { customMetadata: { originalName: image.name } };
+      await uploadBytes(fileRef, image, metadata);
 
       setStatus("Waiting for AI moderation...");
     } catch (error) {
@@ -77,6 +78,7 @@ function App() {
           {status === "pending" && <p>🤖 AI is checking your image...</p>}
           {status === "approved" && <p>✅ Your item is live on the store!</p>}
           {status === "rejected" && <p>❌ Item removed. NSFW content detected.</p>}
+          {status === "failed" && <p style={{ color: 'red' }}>⚠️ Error: {errorVal || "Unknown error occurred"}</p>}
         </div>
       )}
     </div>
