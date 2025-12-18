@@ -1,0 +1,9 @@
+{
+    "name": "marketplace-root",
+    "private": true,
+    "scripts": {
+        "dev": "firebase emulators:start",
+        "deploy": "firebase deploy",
+        "lint": "npm --prefix functions run lint"
+    }
+}
